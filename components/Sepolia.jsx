@@ -68,7 +68,15 @@ const Sepolia = () => {
             console.log("API call result:", rawData);
             const rankedData = calculateRanks(rawData);
             console.log(rawData)
-            setData(rankedData);    
+            setData(prevData => {
+                const existingNames = new Set(prevData.map(item => item.name));
+                const newData = rankedData.filter(item => !existingNames.has(item.name));
+                const updatedData = [...prevData, ...newData];
+                
+                localStorage.setItem('persistedData', JSON.stringify(updatedData));
+                return updatedData;
+            });
+
         } catch (error) {
             console.error("Error calling API:", error);
         }
@@ -76,14 +84,21 @@ const Sepolia = () => {
     };
 
     useEffect(() => {
+        // Load data from localStorage when the component mounts
+        const persistedData = localStorage.getItem('persistedData');
+        if (persistedData) {
+            setData(JSON.parse(persistedData));
+        }
+    
         getContractData();  // Fetch data immediately when component mounts
-
+    
         const interval = setInterval(() => {
             getContractData();
         }, 60000);  // Polls every minute
-
+    
         return () => clearInterval(interval); // Clean up on component unmount
     }, []);
+    
 
     return (
         <div className={styles.container}>
