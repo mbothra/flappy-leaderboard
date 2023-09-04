@@ -22,20 +22,23 @@ const Sepolia = () => {
     ];
     
     const calculateRanks = (dataArray) => {
-        return dataArray.sort((a, b) => {
-            b_amount = hexToNumber(b['amount']._hex);
-            a_amount = hexToNumber(a['amount']._hex);
+        const sortableArray = [...dataArray];  // Create a shallow copy of dataArray
+    
+        return sortableArray.sort((a, b) => {
+            let b_amount = hexToNumber(b['amount']._hex);
+            let a_amount = hexToNumber(a['amount']._hex);
             return b_amount - a_amount
         }).map((item, index) => {
-                let rank;
-                if (index === 0) rank = 'Highest';
-                else if (index === 1) rank = 'Second Highest';
-                else if (index === 2) rank = 'Third Highest';
-                else rank = '';
+            let rank;
+            if (index === 0) rank = 'Highest';
+            else if (index === 1) rank = 'Second Highest';
+            else if (index === 2) rank = 'Third Highest';
+            else rank = '';
     
-                return { 'name': item['name'],'amount':hexToNumber(item['amount']._hex), 'source': 'Avalanche Fuji', 'destination': 'Ethereum Sepolia', rank };
-            });
+            return { 'name': item['name'],'amount':hexToNumber(item['amount']._hex), 'source': 'Avalanche Fuji', 'destination': 'Ethereum Sepolia', rank };
+        });
     };
+    
     
     
     async function getWeb3Account() {
