@@ -58,3 +58,21 @@
     text-align: center;
     
 }
+
+/* Title styles */
+.titleSpacing {
+    margin-top: 1rem; /* or any space you want above the title */
+    margin-bottom: 0.5rem; /* or any space you want between the title and subtitle */
+    text-align: center;
+    font-size: 2rem; /* Adjust according to your preference */
+    font-weight: bold;
+}
+
+/* Subtitle styles */
+.subtitleSpacing {
+    margin-top: -1rem; /* or any space you want above the subtitle, if needed */
+    margin-bottom: 2rem; /* or any space you want below the subtitle */
+    text-align: center;
+    font-size: 1.5rem; /* Adjust according to your preference */
+    color: #666; /* Optional: Slightly dimmed color for contrast */
+}

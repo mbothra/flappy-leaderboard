@@ -5,19 +5,18 @@ import { receiverAbi, contractAddress } from "./constants";
 import AlertSnackbar from './AlertSnackbar';
 import TransactionModal from './TransactionModal';
 import { ethers } from 'ethers';
+import { Contract } from "alchemy-sdk";
+import { useAccount, useSigner, useNetwork } from "wagmi";
 
 const Sepolia = () => {
     const [data, setData] = useState([]);
-    const infuraRpcUrl = 'https://sepolia.infura.io/v3/84a22f268f104ea3b696699dfbc10a25'; // Replace with your Infura RPC URL
-    const provider = new ethers.providers.JsonRpcProvider(infuraRpcUrl);
-    const yourPrivateKey = 'f11ffe0c2a41fb52c9112793ce2fbad6ce48eaeca11b493421a26f7c234ec6fe'; // Replace with your private key
-    const signer = new ethers.Wallet(yourPrivateKey, provider);
+    const { data: signer } = useSigner();
 
     const columns = [
         { label: 'Attendee Name', dataKey: 'name', width: 250 },
-        { label: 'Total Amount Won', dataKey: 'amount', numeric: true, width: 250 },
-        { label: 'Source Chain', dataKey: 'source',  width: 250 },
-        { label: 'Destination Chain', dataKey: 'destination',  width: 250 },
+        { label: 'Score', dataKey: 'pipeScore', numeric: true, width: 250 },
+        { label: 'Function Activation Score', dataKey: 'chainlinkScore',  width: 250 },
+        { label: 'Total Score', dataKey: 'totalScore',  width: 250 },
         { label: 'Rank', dataKey: 'rank', width: 150 }
     ];
     
@@ -25,8 +24,8 @@ const Sepolia = () => {
         const sortableArray = [...dataArray];  // Create a shallow copy of dataArray
     
         return sortableArray.sort((a, b) => {
-            let b_amount = hexToNumber(b['amount']._hex);
-            let a_amount = hexToNumber(a['amount']._hex);
+            let b_amount = hexToNumber(b['totalScore']._hex);
+            let a_amount = hexToNumber(a['totalScore']._hex);
             return b_amount - a_amount
         }).map((item, index) => {
             let rank;
@@ -35,7 +34,12 @@ const Sepolia = () => {
             else if (index === 2) rank = 'Third Highest';
             else rank = '';
     
-            return { 'name': item['name'],'amount':hexToNumber(item['amount']._hex), 'source': 'Avalanche Fuji', 'destination': 'Ethereum Sepolia', rank };
+            return { 
+                'name': item['name'],
+                'pipeScore':hexToNumber(item['pipeScore']._hex), 
+                'chainlinkScore':hexToNumber(item['chainlinkScore']._hex), 
+                'totalScore':hexToNumber(item['totalScore']._hex), 
+                rank };
         });
     };
     
@@ -59,23 +63,14 @@ const Sepolia = () => {
 
     const getContractData = async () => {
 
-        const { signer, provider, chainId, account } = await getWeb3Account();
-        const contract = new ethers.Contract(contractAddress['11155111'], receiverAbi, provider);
-        const receiverContract = contract.connect(signer);
+        const senderContract = new Contract("0x4201DBeBb6A00af00bDDb511aA628bDf8096b8B4", receiverAbi, signer)
         try {
             // Replace this with the actual method from your smart contract
-            const rawData = await receiverContract.getAllNameAndAmounts();
+            const rawData = await senderContract.getTopScorers();
             console.log("API call result:", rawData);
             const rankedData = calculateRanks(rawData);
             console.log(rawData)
-            setData(prevData => {
-                const existingNames = new Set(prevData.map(item => item.name));
-                const newData = rankedData.filter(item => !existingNames.has(item.name));
-                const updatedData = [...prevData, ...newData];
-                
-                localStorage.setItem('persistedData', JSON.stringify(updatedData));
-                return updatedData;
-            });
+            setData(rankedData);
 
         } catch (error) {
             console.error("Error calling API:", error);
@@ -85,13 +80,6 @@ const Sepolia = () => {
 
     useEffect(() => {
         // Load data from localStorage when the component mounts
-        const persistedData = localStorage.getItem('persistedData');
-        if (persistedData) {
-            setData(JSON.parse(persistedData));
-        }
-    
-        getContractData();  // Fetch data immediately when component mounts
-    
         const interval = setInterval(() => {
             getContractData();
         }, 60000);  // Polls every minute
@@ -102,7 +90,8 @@ const Sepolia = () => {
 
     return (
         <div className={styles.container}>
-            <h1 className={styles.spacing}>Chainlink CCIP Finale: The Trio's Mighty Total</h1>
+            <h1 className={styles.spacing}>Chainlink Function SmartCon'23 Championship</h1>
+            <h2 className={styles.subtitleSpacing}>Connecting the World to Chain</h2>
             <DataTable data={data} columns={columns} className={styles.table} />
             <div className={styles.spacing}>
                 <button className={styles.button} onClick={() => getContractData()}>Refresh Data</button>
