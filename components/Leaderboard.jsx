@@ -7,18 +7,44 @@ import TransactionModal from './TransactionModal';
 import { ethers } from 'ethers';
 import { Contract } from "alchemy-sdk";
 import { useAccount, useSigner, useNetwork } from "wagmi";
+import {Table} from '@chainlink/components';
 
 const Sepolia = () => {
     const [data, setData] = useState([]);
     const { data: signer } = useSigner();
 
-    const columns = [
-        { label: 'Attendee Name', dataKey: 'name', width: 250 },
-        { label: 'Score', dataKey: 'pipeScore', numeric: true, width: 250 },
-        { label: 'Function Activation Score', dataKey: 'chainlinkScore',  width: 250 },
-        { label: 'Total Score', dataKey: 'totalScore',  width: 250 },
-        { label: 'Rank', dataKey: 'rank', width: 150 }
-    ];
+    const columns =[
+        { 
+            label: 'Attendee Name', 
+            id: 'name',
+            children: (row) => row.name,  
+            width: '250px'
+        },
+        { 
+            label: 'Score', 
+            id: 'pipeScore',
+            children: (row) => row.pipeScore,  
+            width: '250px'
+        },
+        { 
+            label: 'Function Activation Score', 
+            id: 'chainlinkScore',
+            children: (row) => row.chainlinkScore,  
+            width: '250px'
+        },
+        { 
+            label: 'Total Score', 
+            id: 'totalScore',
+            children: (row) => row.totalScore,  
+            width: '250px'
+        },
+        { 
+            label: 'Rank', 
+            id: 'rank',
+            children: (row) => row.rank,  
+            width: '150px'
+        }
+    ]    
     
     const calculateRanks = (dataArray) => {
         const sortableArray = [...dataArray];  // Create a shallow copy of dataArray
@@ -39,6 +65,7 @@ const Sepolia = () => {
                 'pipeScore':hexToNumber(item['pipeScore']._hex), 
                 'chainlinkScore':hexToNumber(item['chainlinkScore']._hex), 
                 'totalScore':hexToNumber(item['totalScore']._hex), 
+                'id': index.toString(),
                 rank };
         });
     };
@@ -60,6 +87,7 @@ const Sepolia = () => {
         return parseInt(hex, 16);
     };
              
+    
 
     const getContractData = async () => {
 
@@ -71,6 +99,7 @@ const Sepolia = () => {
             const rankedData = calculateRanks(rawData);
             console.log(rawData)
             setData(rankedData);
+            setTimeout(() => getContractData(), 10000);
 
         } catch (error) {
             console.error("Error calling API:", error);
@@ -78,24 +107,34 @@ const Sepolia = () => {
 
     };
 
-    useEffect(() => {
-        // Load data from localStorage when the component mounts
-        const interval = setInterval(() => {
-            getContractData();
-        }, 60000);  // Polls every minute
+    const startPolling = () => {
+        getContractData();  // Call immediately
+        const interval = setInterval(getContractData, 10000);  // Then set the interval
+        return () => clearInterval(interval);  // Cleanup function
+    };
     
-        return () => clearInterval(interval); // Clean up on component unmount
-    }, []);
+
+    useEffect(() => {
+        if (!signer) return;
+        return startPolling();  // Start polling if signer is available
+    }, [signer]);  // Dependency on signer
+    
     
 
     return (
         <div className={styles.container}>
             <h1 className={styles.spacing}>Chainlink Function SmartCon'23 Championship</h1>
-            <h2 className={styles.subtitleSpacing}>Connecting the World to Chain</h2>
-            <DataTable data={data} columns={columns} className={styles.table} />
-            <div className={styles.spacing}>
+            <h2 className={styles.subtitleSpacing}>Connecting the World's API to Chain</h2>
+
+            <div style={{width:'1140px'}}>
+             <Table data={data} columns={columns}     initialOrder={{ column: 'name', direction: 'ascending' }} rowKey={(row) => row['id']}/>
+             </div>
+
+
+            {/* <DataTable data={data} columns={columns} className={styles.table} /> */}
+            {/* <div className={styles.spacing}>
                 <button className={styles.button} onClick={() => getContractData()}>Refresh Data</button>
-            </div>
+            </div> */}
             <AlertSnackbar />
             <TransactionModal />
         </div>
