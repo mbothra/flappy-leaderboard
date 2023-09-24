@@ -123,8 +123,8 @@ const Sepolia = () => {
 
     return (
         <div className={styles.container}>
-            <h1 className={styles.spacing}>Chainlink Function SmartCon'23 Championship</h1>
-            <h2 className={styles.subtitleSpacing}>Connecting the World's API to Chain</h2>
+            <h1 className={styles.spacing}>Chainlink Functions SmartCon 2023 Championship</h1>
+            <h2 className={styles.subtitleSpacing}>Connecting the World's API to smart contracts</h2>
 
             <div style={{width:'1140px'}}>
              <Table data={data} columns={columns}     initialOrder={{ column: 'name', direction: 'ascending' }} rowKey={(row) => row['id']}/>
