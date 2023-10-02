@@ -10,7 +10,6 @@ export default function Navbar() {
 					onClick={() => document.documentElement.requestFullscreen()}
 				></img>
 			</a>
-			<ConnectButton></ConnectButton>
 		</nav>
 	);
 }
