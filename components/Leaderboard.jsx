@@ -18,7 +18,7 @@ const Sepolia = () => {
 
     const columns =[
         { 
-            label: 'Attendee Name', 
+            label: 'Attendee twitter handle', 
             id: 'name',
             children: (row) => row.name,  
             width: '250px'
