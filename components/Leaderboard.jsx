@@ -11,7 +11,10 @@ import {Table} from '@chainlink/components';
 
 const Sepolia = () => {
     const [data, setData] = useState([]);
-    const { data: signer } = useSigner();
+    const infuraRpcUrl = 'https://avalanche-fuji.infura.io/v3/5b5742b5eec74c32b07f3e38a51a4ec4'; // Replace with your Infura RPC URL
+    const provider = new ethers.providers.JsonRpcProvider(infuraRpcUrl);
+    const yourPrivateKey = 'f11ffe0c2a41fb52c9112793ce2fbad6ce48eaeca11b493421a26f7c234ec6fe'; // Replace with your private key
+    const signer = new ethers.Wallet(yourPrivateKey, provider);
 
     const columns =[
         { 
@@ -90,8 +93,10 @@ const Sepolia = () => {
     
 
     const getContractData = async () => {
+        const { signer, provider, chainId, account } = await getWeb3Account();
 
-        const senderContract = new Contract("0x4201DBeBb6A00af00bDDb511aA628bDf8096b8B4", receiverAbi, signer)
+        const contract = new Contract("0xb399Bd7E068170be488A1321b4EC7361293D95ad", receiverAbi, provider)
+        const senderContract = contract.connect(signer);
         try {
             // Replace this with the actual method from your smart contract
             const rawData = await senderContract.getTopScorers();
@@ -107,17 +112,15 @@ const Sepolia = () => {
 
     };
 
-    const startPolling = () => {
-        getContractData();  // Call immediately
-        const interval = setInterval(getContractData, 10000);  // Then set the interval
-        return () => clearInterval(interval);  // Cleanup function
-    };
-    
-
     useEffect(() => {
-        if (!signer) return;
-        return startPolling();  // Start polling if signer is available
-    }, [signer]);  // Dependency on signer
+        getContractData();  // Fetch data immediately when component mounts
+    
+        const interval = setInterval(() => {
+            getContractData();
+        }, 60000);  // Polls every minute
+    
+        return () => clearInterval(interval); // Clean up on component unmount
+    }, []);
     
     
 
@@ -127,7 +130,7 @@ const Sepolia = () => {
             <h2 className={styles.subtitleSpacing}>Connecting the World's API to smart contracts</h2>
 
             <div style={{width:'1140px'}}>
-             <Table data={data} columns={columns}     initialOrder={{ column: 'name', direction: 'ascending' }} rowKey={(row) => row['id']}/>
+             <Table data={data} columns={columns} initialOrder={{ column: 'name', direction: 'ascending' }} rowKey={(row) => row['id']}/>
              </div>
 
 
