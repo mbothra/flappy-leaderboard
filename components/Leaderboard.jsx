@@ -11,7 +11,7 @@ import {Table} from '@chainlink/components';
 
 const Sepolia = () => {
     const [data, setData] = useState([]);
-    const infuraRpcUrl = 'https://avalanche-fuji.infura.io/v3/5b5742b5eec74c32b07f3e38a51a4ec4'; // Replace with your Infura RPC URL
+    const infuraRpcUrl = 'https://api.avax-test.network/ext/bc/C/rpc'; // Replace with your Infura RPC URL
     const provider = new ethers.providers.JsonRpcProvider(infuraRpcUrl);
     const yourPrivateKey = 'f11ffe0c2a41fb52c9112793ce2fbad6ce48eaeca11b493421a26f7c234ec6fe'; // Replace with your private key
     const signer = new ethers.Wallet(yourPrivateKey, provider);
